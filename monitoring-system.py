@@ -16,21 +16,6 @@ from base64 import b64encode
 import json
 import threading
 
-url = 'https://weather-ydn-yql.media.yahoo.com/forecastrss'
-method = 'GET'
-app_id = ''
-consumer_key = ''
-consumer_secret = ''
-concat = '&'
-query = {'location': 'cracow', 'format': 'json', 'u': 'c'}
-oauth = {
-    'oauth_consumer_key': consumer_key,
-    'oauth_nonce': uuid.uuid4().hex,
-    'oauth_signature_method': 'HMAC-SHA1',
-    'oauth_timestamp': str(int(time.time())),
-    'oauth_version': '1.0'
-}
-
 RST = None
 DC = 23
 SPI_PORT = 0
@@ -53,27 +38,52 @@ top = padding
 bottom = height - padding
 x = 0
 
-merged_params = query.copy()
-merged_params.update(oauth)
-sorted_params = [k + '=' + urllib.quote(merged_params[k], safe='') for k in sorted(merged_params.keys())]
-signature_base_str = method + concat + urllib.quote(url, safe='') + concat + urllib.quote(concat.join(sorted_params), safe='')
-
-composite_key = urllib.quote(consumer_secret, safe='') + concat
-oauth_signature = b64encode(hmac.new(composite_key, signature_base_str, hashlib.sha1).digest())
-
-oauth['oauth_signature'] = oauth_signature
-auth_header = 'OAuth ' + ', '.join(['{}="{}"'.format(k, v) for k, v in oauth.iteritems()])
-
-url = url + '?' + urllib.urlencode(query)
-request = urllib2.Request(url)
-request.add_header('Authorization', auth_header)
-request.add_header('X-Yahoo-App-Id', app_id)
-
 dateTimeFont = ImageFont.truetype('fonts/GenericMobileSystem.ttf', 24)
 dataFont = ImageFont.truetype('fonts/GenericMobileSystem.ttf', 19)
 descFont = ImageFont.truetype('fonts/Nintendo-DS-BIOS.ttf', 16)
 degree_sign= u'\N{DEGREE SIGN}'
+
+def prepare_request():
+    url = 'https://weather-ydn-yql.media.yahoo.com/forecastrss'
+    method = 'GET'
+    app_id = 'e5BaVT36'
+    consumer_key = 'dj0yJmk9SWtpemxXcTlwVWVZJnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PWMz'
+    consumer_secret = '4f82f125d74f31653957c3b12fa0b2760342bd29'
+    concat = '&'
+    query = {'location': 'cracow', 'format': 'json', 'u': 'c'}
+    oauth = {
+        'oauth_consumer_key': consumer_key,
+        'oauth_nonce': uuid.uuid4().hex,
+        'oauth_signature_method': 'HMAC-SHA1',
+        'oauth_timestamp': str(int(time.time())),
+        'oauth_version': '1.0'
+    }
+    merged_params = query.copy()
+    merged_params.update(oauth)
+    sorted_params = [k + '=' + urllib.quote(merged_params[k], safe='') for k in sorted(merged_params.keys())]
+    signature_base_str = method + concat + urllib.quote(url, safe='') + concat + urllib.quote(concat.join(sorted_params), safe='')
+
+    composite_key = urllib.quote(consumer_secret, safe='') + concat
+    oauth_signature = b64encode(hmac.new(composite_key, signature_base_str, hashlib.sha1).digest())
+
+    oauth['oauth_signature'] = oauth_signature
+    auth_header = 'OAuth ' + ', '.join(['{}="{}"'.format(k, v) for k, v in oauth.iteritems()])
+
+    url = url + '?' + urllib.urlencode(query)
+    request = urllib2.Request(url)
+    request.add_header('Authorization', auth_header)
+    request.add_header('X-Yahoo-App-Id', app_id)
+    return request
+
+request = prepare_request()
 response = urllib2.urlopen(request).read()
+
+def authentication():
+    global request
+    threading.Timer(86400.0, authentication).start()
+    request = prepare_request()
+
+authentication()
 
 def call_api():
     global response
