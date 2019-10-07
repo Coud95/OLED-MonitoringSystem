@@ -46,9 +46,9 @@ degree_sign= u'\N{DEGREE SIGN}'
 def prepare_request():
     url = 'https://weather-ydn-yql.media.yahoo.com/forecastrss'
     method = 'GET'
-    app_id = 'e5BaVT36'
-    consumer_key = 'dj0yJmk9SWtpemxXcTlwVWVZJnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PWMz'
-    consumer_secret = '4f82f125d74f31653957c3b12fa0b2760342bd29'
+    app_id = ''
+    consumer_key = ''
+    consumer_secret = ''
     concat = '&'
     query = {'location': 'cracow', 'format': 'json', 'u': 'c'}
     oauth = {
